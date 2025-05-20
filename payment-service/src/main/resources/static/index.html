@@ -1,0 +1,50 @@
+<button id="pay-button">Pay Now</button>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+    document.getElementById('pay-button').onclick = function () {
+        fetch('http://localhost:8084/payment/getOrderAmount', {
+            method: 'GET'
+        })
+        .then(response => response.json())
+        .then(order => {
+            const options = {
+                key: "rzp_test_S0r9gRKO9Q56Ag", // Replace with your Razorpay API Key
+                amount: order.amount, // Amount in paise
+                currency: "INR",
+                name: "Online Railway Reservation System",
+                description: "Test Transaction",
+                order_id: order.orderId, // Make sure this is same as the Razorpay Order ID
+                handler: function (response) {
+                    const paymentStatus = {
+                        payment_id: response.razorpay_payment_id,
+                        order_id: response.razorpay_order_id,
+                        status: "SUCCESS"
+                    }
+
+                    // Send payment status to your backend
+                    fetch("http://localhost:8084/payment/payment-status", {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(paymentStatus)
+                    })
+                    .then(res => {
+                        if (res.ok) {
+                            alert("Payment Successful! Booking Ticket...");
+                        } else {
+                            alert("Payment Failed! Try Again.");
+                        }
+                    });
+                },
+                theme: {
+                    color: "#3399cc"
+                }
+            };
+            const rzp = new Razorpay(options);
+            rzp.open();
+        })
+        .catch(err => console.error('Payment Order Error:', err));
+    };
+</script>
