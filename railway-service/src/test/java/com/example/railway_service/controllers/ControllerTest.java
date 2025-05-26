@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.example.railway_service.dto.ResponseDTO;
 import com.example.railway_service.dto.TrainDTO;
+import com.example.railway_service.dto.ViewTrainResponse;
 import com.example.railway_service.model.TrainAvailablity;
 import com.example.railway_service.model.TrainModel;
 import com.example.railway_service.serviceInterface.ServiceInterface;
@@ -153,34 +154,46 @@ public class ControllerTest {
                 .andExpect(content().string("true"));
     }
 
-//    @Test
-//    public void testCancelTrainTicket() throws Exception {
-//        when(service.cancelTrainTicket("12345", "AC", 10, "2025-05-05")).thenReturn(true);
-//
-//        mockMvc.perform(post("/train/cancelTkt/12345/AC/10/2025-05-05"))
-//                .andExpect(status().isOk())
-//                .andExpect(content().string("true"));
-//    }
-//
-//    @Test
-//    public void testBookTrainTicket() throws Exception {
-//        when(service.bookTrainTicket("12345", "AC", 10, "2025-05-05")).thenReturn(true);
-//
-//        mockMvc.perform(post("/train/bookTrain/12345/AC/10/2025-05-05"))
-//                .andExpect(status().isOk())
-//                .andExpect(content().string("true"));
-//    }
+    @Test
+    public void testCancelTrainTicket() throws Exception {
+        when(service.cancelTrainTicket("12345", "AC", 10, "2025-05-05", "1A,1B")).thenReturn(true);
 
-//    @Test
-//    public void testViewTrain() throws Exception {
-//        TrainModel trainModel = new TrainModel("Express", "12345", "Mumbai", "Delhi", "10:00", "18:00", 10, 5, 1000, 5, 500, 10.0);
-//
-//        when(service.viewTrain("Mumbai", "Delhi","2025-02-09")).thenReturn(Collections.singletonList(trainModel));
-//
-//        String trainModelJson = objectMapper.writeValueAsString(Collections.singletonList(trainModel));
-//
-//        mockMvc.perform(get("/train/viewTicket/Mumbai/Delhi"))
-//                .andExpect(status().isOk())
-//                .andExpect(content().json(trainModelJson));
-//    }
+        mockMvc.perform(post("/train/cancelTkt/12345/AC/10/2025-05-05/1A,1B"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("true"));
+    }
+
+    @Test
+    public void testBookTrainTicket() throws Exception {
+        when(service.bookTrainTicket("12345", "AC", 10, "2025-05-05")).thenReturn(true);
+
+        mockMvc.perform(post("/train/bookTrain/12345/AC/10/2025-05-05"))
+                .andExpect(status().isOk())
+                .andExpect(content().string("true"));
+    }
+
+
+    @Test
+    public void testViewTrain() throws Exception {
+        ViewTrainResponse viewTrainResponse = new ViewTrainResponse();
+        viewTrainResponse.setTrainNumber("12345");
+        viewTrainResponse.setTrainName("Express");
+        viewTrainResponse.setSource("Mumbai");
+        viewTrainResponse.setDestination("Delhi");
+        viewTrainResponse.setDepartureTime("10:00");
+        viewTrainResponse.setArrivalTime("18:00");
+        viewTrainResponse.setAcFare(1000);
+        viewTrainResponse.setSlFare(500);
+        viewTrainResponse.setTrainType("Espress");
+
+        when(service.viewTrain("Mumbai", "Delhi", "2025-02-09"))
+            .thenReturn(Collections.singletonList(viewTrainResponse));
+
+        String responseJson = objectMapper.writeValueAsString(Collections.singletonList(viewTrainResponse));
+
+        mockMvc.perform(get("/train/viewTicket/Mumbai/Delhi/2025-02-09"))
+                .andExpect(status().isOk())
+                .andExpect(content().json(responseJson));
+    }
+
 }

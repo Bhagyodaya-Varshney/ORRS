@@ -23,7 +23,9 @@ public class Booking {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long bookingId;
+	private int id;
+	
+	private String userEmail;
 	
 	private String trainId;
 	private String fromStation;

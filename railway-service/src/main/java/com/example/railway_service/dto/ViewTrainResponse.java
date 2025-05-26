@@ -19,4 +19,5 @@ public class ViewTrainResponse {
 	private Integer acFare;
 	private Integer slAvl;
 	private Integer slFare;
+	private String trainType;
 }

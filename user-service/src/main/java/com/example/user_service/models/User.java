@@ -30,6 +30,7 @@ public class User implements UserDetails{
 	private String lastname;
 	private String password;
 	private String role = "USER";
+	private int orrsCoins;
 	
 	
 	public User(String firstname, String lastname, String email, String password) {

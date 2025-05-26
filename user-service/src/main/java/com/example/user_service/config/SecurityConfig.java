@@ -38,8 +38,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authenticationProvider(authenticationProvider())
-            .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class);
+            .authenticationProvider(authenticationProvider());
         return http.build();
     }
 

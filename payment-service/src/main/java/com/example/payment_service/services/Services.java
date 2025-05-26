@@ -18,14 +18,15 @@ public class Services implements ServiceInterface {
     private String key = "rzp_test_S0r9gRKO9Q56Ag";
     private String secret = "d6lv0gZxtKscjadfv3S1ncL4";
     private int amount;
-    
-    PaymentModel paymentModel = new PaymentModel();
 
     @Autowired
     PaymentRepo repo;
+    
+    PaymentModel dataPaymentModel = new PaymentModel();
 
     // Process Payment and Generate Order ID
     public String ProcessPayment(int fare) {
+    	 PaymentModel paymentModel = new PaymentModel();
         try {
             RazorpayClient razorpayClient = new RazorpayClient(key, secret);
             JSONObject orderRequest = new JSONObject();
@@ -44,6 +45,7 @@ public class Services implements ServiceInterface {
 //            paymentModel.setPaymentId("");
 
             // Save the payment model to the repository
+            dataPaymentModel = paymentModel;
             repo.save(paymentModel);
 
             return razorpayId;
@@ -62,7 +64,7 @@ public class Services implements ServiceInterface {
     }
     
     public PaymentModel getOrderAmount() {
-    	return paymentModel;
+    	return dataPaymentModel;
     }
 
     // Verify payment with Razorpay or database

@@ -8,4 +8,6 @@ import com.example.user_service.dto.UserDTO;
 public interface UserServiceInterface {
 	RegisterResponse registerUser(UserDTO userdto);
 	TokenResponse loginUser(LoginDTO loginDTO);
+	boolean updateCoins(String email, int coins) throws Exception;
+	int getCoins(String email) throws Exception;
 }

@@ -1,11 +1,10 @@
 package com.example.booking_service.services;
 
-import java.time.Duration;
+import java.security.Key;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,14 +20,17 @@ import com.example.booking_service.exceptions.CancelTicketFailedException;
 import com.example.booking_service.exceptions.SeatNotAvailableException;
 import com.example.booking_service.exceptions.TicketNotFoundException;
 import com.example.booking_service.model.Booking;
-import com.example.booking_service.model.CancelTicketId;
-import com.example.booking_service.model.CancelTicketModel;
 import com.example.booking_service.model.PassengerModel;
 import com.example.booking_service.model.TrainModel;
 import com.example.booking_service.model.TrainAvailablity;
 import com.example.booking_service.serviceInterface.PaymentClient;
 import com.example.booking_service.serviceInterface.ServiceInterface;
 import com.example.booking_service.serviceInterface.TrainClient;
+import com.example.booking_service.serviceInterface.UserClient;
+
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 
 
 @Service
@@ -46,12 +48,15 @@ public class Services implements ServiceInterface{
 	@Autowired
 	PaymentClient paymentClient;
 	
+	@Autowired
+	UserClient userClient;
+	
 	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 	
 	
 		
 	
-	public String bookTicket(TicketBookingDTO bookingRequest) {
+	public String bookTicket(TicketBookingDTO bookingRequest, String authHeader) {
 		
 		Booking booking = new Booking();
 		boolean seatAvl = trainClient.isSeatAvl(
@@ -77,6 +82,8 @@ public class Services implements ServiceInterface{
     	int noOfSeats = bookingRequest.getPassengers().size();
 
     	// Create Booking object
+    	String username = extractUsername(authHeader.substring(7));
+    	booking.setUserEmail(username);
     	booking.setBookingStatus("NOT CONFIRMED");
     	booking.setBookingTime(LocalDateTime.now());
     	booking.setTrainId(bookingRequest.getTrainId());
@@ -112,7 +119,12 @@ public class Services implements ServiceInterface{
 
 
     // Step 1: Generate payment order
-    	String paymentOrderId = paymentClient.generateOrder(totalFare);
+    	int coins = userClient.getCoins(booking.getUserEmail());
+    	if( coins >= 400) {
+			booking.setTotalFare(booking.getTotalFare()-50);
+			userClient.updateCoins(username, (-200));
+		}
+    	String paymentOrderId = paymentClient.generateOrder(booking.getTotalFare());
     	if (paymentOrderId == null) {
     		throw new RuntimeException("Failed to generate payment order. Try again later.");
     	}
@@ -143,6 +155,10 @@ public class Services implements ServiceInterface{
 				findBooking.getCoachType(), avl, train, findBooking.getNoOfTickets(), findBooking.getPassengers()
 		);
 		findBooking.setSeatNumber(seatNumbers);
+		System.out.println(findBooking.getTotalFare()+" "+(findBooking.getTotalFare()>=6000));
+		if(findBooking.getTotalFare()>=6000) {
+			userClient.updateCoins(findBooking.getUserEmail(), 300);
+		}
 	    repo.save(findBooking);  // Save the updated booking status
 	    
 	    trainClient.bookTrainTicket(findBooking.getTrainId(),
@@ -198,7 +214,8 @@ public class Services implements ServiceInterface{
 		}
 		else if(coach.equals("AC") && (avl.getAcAvailabilty() < noOfSeats) && avl.getAcCancelAvailabilty() != 0) {
 			String[] seatNumbers = avl.getAcCancelSeats().split(",");
-			int firstSeat = avl.getAcAvailabilty()+1;
+			int totalSeats = (train.getNoAcCoach()*72)-avl.getAcAvailabilty();
+			int firstSeat = totalSeats+1;
 			for(int i=0;i<avl.getAcAvailabilty();i++) {
 				String seat = "AC-"+(firstSeat+i)+",";
 				sb.append(seat);
@@ -266,5 +283,14 @@ public class Services implements ServiceInterface{
 	public List<ViewTrainResponse> viewTrain(String source, String destination, String dateOfJourney){
 		List<ViewTrainResponse> trainList = trainClient.viewTrain(source,destination,dateOfJourney);
 		return trainList;
+	}
+	
+	private Key getSignKey() {
+		byte[] key = Decoders.BASE64.decode("413F4428472B62506ertyufh55368566D597B337123");
+        return Keys.hmacShaKeyFor(key);
+	}
+	
+	public String extractUsername(String token) {
+		return Jwts.parserBuilder().setSigningKey(getSignKey()).build().parseClaimsJws(token).getBody().getSubject();
 	}
 }

@@ -42,7 +42,7 @@ public class UserService implements UserServiceInterface{
 		Optional<User> userExists = repo.findByEmail(userdto.getEmail());
 		
 		if(!userExists.isPresent()) {
-			User user = new User(userdto.getEmail(),userdto.getFirstname(),userdto.getLastname(),passEncoder.encode(userdto.getPassword()));
+			User user = new User(userdto.getFirstname(),userdto.getLastname(),userdto.getEmail(),passEncoder.encode(userdto.getPassword()));
 			repo.save(user);
 			
 			res.setUsername(userdto.getEmail());
@@ -70,6 +70,18 @@ public class UserService implements UserServiceInterface{
 		catch(Exception e){
 			throw new AuthenticationFailedException("Invalid email or password");
 		}
+	}
+	
+	public boolean updateCoins(String email, int coins) throws Exception {
+		User user = repo.findByEmail(email).orElseThrow(()-> new Exception("Please Try Again Later"));
+		user.setOrrsCoins(user.getOrrsCoins()+coins);
+		repo.save(user);
+		return true;
+	}
+	
+	public int getCoins(String email) throws Exception{
+		User user = repo.findByEmail(email).orElseThrow(()-> new Exception("Please Try Again Later"));
+		return user.getOrrsCoins();
 	}
 	
 }

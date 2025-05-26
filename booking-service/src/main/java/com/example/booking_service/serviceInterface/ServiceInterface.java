@@ -10,7 +10,7 @@ import com.example.booking_service.model.TrainAvailablity;
 import com.example.booking_service.model.TrainModel;
 
 public interface ServiceInterface {
-	String bookTicket(TicketBookingDTO bookingRequest);
+	String bookTicket(TicketBookingDTO bookingRequest,String authHeader);
 	TicketResponse confirmBooking(String paymentId,String orderId);
 	String cancelTicket(String pnrNumber);
 	String generatePNRNumber();

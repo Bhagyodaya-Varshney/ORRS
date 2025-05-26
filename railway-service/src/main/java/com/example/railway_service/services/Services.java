@@ -216,7 +216,7 @@ public class Services implements ServiceInterface{
 		for(TrainModel tm : trainList) {
 			TrainAvailablity avl = getTrainAvailablity(tm.getTrainNumber(),dateOfJourney);
 			System.out.println(avl.getAcAvailabilty());
-			returnList.add(new ViewTrainResponse(tm.getTrainName(),tm.getTrainNumber(),tm.getSource(),tm.getDepartureTime(),tm.getDestination(),tm.getArrivalTime(),avl.getAcAvailabilty(),tm.getAcFare(),avl.getSlAvailabilty(),tm.getSlFare()));
+			returnList.add(new ViewTrainResponse(tm.getTrainName(),tm.getTrainNumber(),tm.getSource(),tm.getDepartureTime(),tm.getDestination(),tm.getArrivalTime(),avl.getAcAvailabilty(),tm.getAcFare(),avl.getSlAvailabilty(),tm.getSlFare(),tm.getTrainType()));
 		}
 		
 		return returnList;
